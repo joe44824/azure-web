@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+
+{% block content %}
+<style>
+    .history-card {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .history-card h1 {
+        margin: 0 0 1.5rem 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        text-align: center;
+    }
+
+    .no-uploads-msg {
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-table thead {
+        background-color: #f3f4f6;
+        color: #111827;
+    }
+
+    .history-table th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #6b7280;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .history-table tbody tr {
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .history-table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+
+    .history-table td {
+        padding: 0.75rem 1rem;
+        color: #111827;
+        font-size: 14px;
+    }
+
+    .filename-cell {
+        font-family: Menlo, Monaco, Consolas, monospace;
+        color: #0078d4;
+        font-size: 13px;
+        max-width: 320px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .time-cell,
+    .size-cell {
+        font-size: 13px;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    .status-cell {
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: none;
+        white-space: nowrap;
+    }
+
+    .status-success {
+        color: #059669;
+    }
+
+    .status-processing {
+        color: #d97706;
+    }
+
+    .status-failed {
+        color: #dc2626;
+    }
+</style>
+
+<div class="history-card">
+    <h1>Upload History</h1>
+
+    {% if not history %}
+    <p class="no-uploads-msg">No uploads yet.</p>
+    {% else %}
+    <div class="overflow-x-auto">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>File name</th>
+                    <th>Upload time</th>
+                    <th>Size</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td class="filename-cell">{{ record.filename }}</td>
+                    <td class="time-cell">{{ record.uploaded_at }}</td>
+                    <td class="size-cell">{{ record.size }}</td>
+                    <td class="status-cell
+            {% if record.status == 'uploaded' %}status-success
+            {% elif record.status == 'processing' %}status-processing
+            {% elif record.status == 'failed' %}status-failed
+            {% endif %}">
+                        {% if record.status == 'uploaded' %}✅ Uploaded
+                        {% elif record.status == 'processing' %}⚠️ Processing
+                        {% elif record.status == 'failed' %}❌ Failed
+                        {% else %}{{ record.status }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

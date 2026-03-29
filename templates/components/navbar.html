@@ -1,0 +1,127 @@
+<nav class="navbar">
+    {% if request %}
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60px;
+            padding: 0 1.5rem;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex: 1;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .nav-brand-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            background: transparent;
+            display: grid;
+            place-items: center;
+        }
+
+        .nav-brand-icon img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-brand-name {
+            font-size: 20px;
+            font-weight: 500;
+            color: #111827;
+            letter-spacing: -0.01em;
+        }
+
+        .nav-link {
+            font-size: 20px;
+            color: #6b7280;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition:
+                background 0.2s ease,
+                color 0.2s ease,
+                transform 0.1s ease;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #111827;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: #eff6ff;
+            color: #0078d4;
+            font-weight: 500;
+            transform: translateY(-1px);
+            box-shadow: 0 1px 2px rgba(0, 120, 212, 0.15);
+        }
+
+        .nav-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 9999px;
+            background-color: #0078d4;
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-avatar:hover {
+            transform: scale(1.05);
+        }
+    </style>
+    {% endif %}
+
+    <ul class="navbar-left">
+        <li>
+            <a href="/" class="nav-brand">
+                <div class="nav-brand-icon">
+                    <img src="{{ url_for('static', path='images/azure.png') }}" alt="Azure logo" />
+                </div>
+                <span class="nav-brand-name">Sandpit</span>
+            </a>
+        </li>
+        <li><a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">Upload</a></li>
+        <li><a href="/history" class="nav-link {% if request.url.path == '/history' %}active{% endif %}">History</a>
+        </li>
+    </ul>
+
+    <ul class="navbar-right">
+        <li>
+            <div class="nav-avatar">JD</div>
+        </li>
+    </ul>
+</nav>

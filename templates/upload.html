@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-16 px-4">
+
+    <div style="max-width:480px;margin: 10rem auto 0 auto">
+
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data"
+            onsubmit="handleSubmit(event)">
+            <label for="dropzone-file" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:32px 16px;
+               border-radius:14px;background:#f9fafb;border:1.5px dashed #d1d5db;cursor:pointer;
+               transition:background 0.15s ease,color 0.15s ease"
+                onmouseover="this.style.background='#f3f4f6';this.style.color='#374151'"
+                onmouseout="this.style.background='#f9fafb';this.style.color='inherit'">
+                <div style="width:36px;height:36px;border-radius:50%;background:white;border:1px solid #e5e7eb;
+                    display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,0.03)">
+                    <svg style="width:16px;height:16px;color:#6b7280" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                </div>
+                <span style="font-size:13px;font-weight:500;color:#374151">
+                    Click to browse or drag and drop
+                </span>
+                <input id="dropzone-file" type="file" name="files" multiple style="display:none"
+                    onchange="onFilesSelected(this)" />
+            </label>
+
+            <ul id="file-list"
+                style="margin-top:12px;display:flex;flex-direction:column;gap:1px;list-style:none;padding:0"></ul>
+
+            <div id="progress-wrapper" style="display:none;margin-top:16px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                    <span id="prog-label" style="font-size:12px;color:#6b7280"></span>
+                    <span id="prog-pct" style="font-size:12px;color:#9ca3af">0%</span>
+                </div>
+                <div
+                    style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden;box-shadow:inset 0 1px 1px rgba(0,0,0,0.02)">
+                    <div id="prog-bar"
+                        style="height:100%;border-radius:99px;background:#378ADD;width:0%;transition:width 0.075s ease">
+                    </div>
+                </div>
+            </div>
+
+            <button id="upload-btn" type="submit" disabled style="margin-top:18px;width:100%;padding:10px;background:#378ADD;color:white;
+               font-size:13.5px;font-weight:600;border:none;border-radius:10px;cursor:not-allowed;
+               transition:background 0.15s ease,transform 0.05s ease">
+                Upload files
+            </button>
+        </form>
+
+        {% if upload_success %}
+        <div style="margin-top:16px;display:flex;align-items:center;gap:10px;padding-top:16px;
+                 border-top:0.5px solid #e5e7eb">
+            <div style="width:28px;height:28px;border-radius:50%;background:#EAF3DE;display:flex;
+                  align-items:center;justify-content:center;flex-shrink:0">
+                <svg style="width:13px;height:13px;color:#27500A" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div style="min-width:0">
+                <p style="font-size:12px;font-weight:500;color:#27500A;margin:0">
+                    Upload complete
+                </p>
+                <p
+                    style="font-size:11px;color:#3B6D11;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                    {{ filename | e }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const btn = document.getElementById('upload-btn');
+    const fileList = document.getElementById('file-list');
+    const progWrap = document.getElementById('progress-wrapper');
+    const progBar = document.getElementById('prog-bar');
+    const progPct = document.getElementById('prog-pct');
+    const progLabel = document.getElementById('prog-label');
+    const DURATION = 5000;
+
+    const ICONS = {
+        img: `<svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`,
+        pdf: `<svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`,
+        doc: `<svg style="width:14px;height:14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+    };
+
+    const iconStyles = {
+        img: { bg: '#E6F1FB', color: '#185FA5' },
+        pdf: { bg: '#FCEBEB', color: '#A32D2D' },
+        doc: { bg: '#EEEDFE', color: '#534AB7' },
+    };
+
+    const pills = {
+        queued: { bg: '#f9fafb', color: '#9ca3af' },
+        uploading: { bg: '#E6F1FB', color: '#0C447C' },
+        done: { bg: '#EAF3DE', color: '#27500A' },
+    };
+
+    function iconType(name) {
+        if (/\.(png|jpe?g|gif|svg|webp)$/i.test(name)) return 'img';
+        if (/\.pdf$/i.test(name)) return 'pdf';
+        return 'doc';
+    }
+
+    function fmt(b) {
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        return (b / 1048576).toFixed(1) + ' MB';
+    }
+
+    function renderPill(el, state) {
+        const p = pills[state];
+        el.textContent = state;
+        el.style.background = p.bg;
+        el.style.color = p.color;
+    }
+
+    function removeFile(idx) {
+        const input = document.getElementById('dropzone-file');
+        const dt = new DataTransfer();
+        Array.from(input.files).forEach((f, i) => { if (i !== idx) dt.items.add(f); });
+        input.files = dt.files;
+        onFilesSelected(input);
+    }
+
+    function onFilesSelected(input) {
+        const files = Array.from(input.files);
+        fileList.innerHTML = '';
+
+        files.forEach((f, i) => {
+            const type = iconType(f.name);
+            const s = iconStyles[type];
+            const isLast = i === files.length - 1;
+            const li = document.createElement('li');
+            li.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 4px;${isLast ? '' : 'border-bottom:0.5px solid #f3f4f6'}`;
+            li.innerHTML = `
+        <div style="width:28px;height:28px;border-radius:6px;background:${s.bg};color:${s.color};
+                    display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${ICONS[type]}
+        </div>
+        <div style="flex:1;min-width:0">
+          <p style="font-size:12px;font-weight:500;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0">
+            ${f.name}
+          </p>
+          <p style="font-size:11px;color:#9ca3af;margin:2px 0 0">${fmt(f.size)}</p>
+        </div>
+        <span style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0"></span>
+        <button type="button" onclick="removeFile(${i})"
+          style="background:none;border:none;cursor:pointer;color:#d1d5db;padding:4px;border-radius:4px;display:flex;flex-shrink:0"
+          onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#d1d5db'">
+          <svg style="width:12px;height:12px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>`;
+            renderPill(li.querySelector('span'), 'queued');
+            fileList.appendChild(li);
+        });
+
+        const n = files.length;
+        btn.disabled = n === 0;
+        btn.style.background = n > 0 ? '#378ADD' : '#f3f4f6';
+        btn.style.color = n > 0 ? 'white' : '#9ca3af';
+        btn.style.cursor = n > 0 ? 'pointer' : 'not-allowed';
+        btn.style.transform = n > 0 ? 'scale(1)' : 'scale(0.98)';
+        btn.textContent = n > 0 ? `Upload ${n} file${n > 1 ? 's' : ''}` : 'Upload files';
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        btn.disabled = true;
+        btn.style.background = '#f3f4f6';
+        btn.style.color = '#9ca3af';
+        btn.style.cursor = 'not-allowed';
+        btn.style.transform = 'scale(0.98)';
+        progWrap.style.display = 'block';
+
+        const total = document.getElementById('dropzone-file').files.length;
+        const rows = fileList.querySelectorAll('li');
+        const start = performance.now();
+        let last = 0;
+
+        function tick(now) {
+            const elapsed = now - start;
+            const p = Math.min(Math.round(Math.pow(elapsed / DURATION, 0.55) * 100), 99);
+
+            if (p !== last) {
+                progBar.style.width = p + '%';
+                progPct.textContent = p + '%';
+                const doneCount = Math.floor(p / 100 * total);
+                rows.forEach((row, i) => {
+                    const pill = row.querySelector('span');
+                    if (i < doneCount) renderPill(pill, 'done');
+                    else if (i === doneCount) renderPill(pill, 'uploading');
+                });
+                progLabel.textContent = `Uploading ${Math.min(doneCount + 1, total)} of ${total}…`;
+                last = p;
+            }
+
+            if (elapsed < DURATION) {
+                requestAnimationFrame(tick);
+            } else {
+                progBar.style.width = '100%';
+                progBar.style.background = '#639922';
+                progPct.textContent = '100%';
+                progLabel.textContent = 'Upload complete';
+                rows.forEach(row => renderPill(row.querySelector('span'), 'done'));
+                setTimeout(() => document.getElementById('upload-form').submit(), 400);
+            }
+        }
+
+        requestAnimationFrame(tick);
+    }
+</script>
+{% endblock %}

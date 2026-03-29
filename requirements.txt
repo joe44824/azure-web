@@ -1,0 +1,10 @@
+# FastAPI and server
+fastapi[standard]>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Templates and static files
+jinja2>=3.1.0
+
+# Needed inside FastAPI for StaticFiles
+starlette>=0.37.0
+aiofiles>=0.8
