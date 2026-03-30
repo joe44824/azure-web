@@ -21,7 +21,11 @@ def classify_status(filename: str) -> str:
 
 @app.get("/", response_class=HTMLResponse)
 async def upload_form(request: Request):
-    return templates.TemplateResponse("upload.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request,
+        name="upload.html",
+        context={}
+    )
 
 
 @app.post("/upload")
@@ -50,6 +54,7 @@ async def history_page(request: Request):
     history.sort(key=lambda x: x["filename"], reverse=True)
 
     return templates.TemplateResponse(
-        "history.html",
-        {"request": request, "history": history}
-    )
+    request=request,
+    name="history.html",
+    context={}
+)
